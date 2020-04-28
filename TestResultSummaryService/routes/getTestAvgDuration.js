@@ -11,7 +11,7 @@ const { TestResultsDB } = require('../Database');
  * The program will query all tests that contain this name.
  * @param {string} platform Optional. Test platform (i.e., x86-64_linux)
  * @param {number} jdkVersion Optional. JDK version (i.e., 8, 11, etc)
- * @param {string} impl Optional. JDK impl (i.e., j9, hs, etc)
+ * @param {string} impl Optional. JDK impl (i.e., openj9, hotspot, etc)
  * @param {string} level Optional. Test level (i.e., sanity, extended, special)
  * @param {string} group Optional. Test group (i.e., functional, system, openjdk, perf, etc)
  * @param {number} bucketCount Optional. The number of buckets the tests will be divided into.
@@ -26,6 +26,15 @@ const { TestResultsDB } = require('../Database');
 module.exports = async (req, res) => {
     const { bucketCount = 1 } = req.query;
     const db = new TestResultsDB();
+
+    if (req.query.impl) {
+        if (req.query.impl.equals("openj9")) {
+            req.query.impl = "j9";
+        } else if (req.query.impl.equals("hotspot")) {
+            req.query.impl = "hs";
+        }
+    }
+
     const result = await db.getAvgDuration(req.query);
 
     if (!result) {
